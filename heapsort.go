@@ -1,3 +1,7 @@
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main
 
 type Interface interface {
@@ -64,12 +68,4 @@ func heapSort(data Interface, a, b int) {
 
 func Heap(data Interface) {
 	heapSort(data, 0, data.Len())
-}
-
-func Sort(data Interface) {
-	n := data.Len()
-	if n <= 1 {
-		return
-	}
-	heapSort(data, 0, n)
 }

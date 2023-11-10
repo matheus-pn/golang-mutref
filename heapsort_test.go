@@ -6,7 +6,9 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
+	"sort"
 	"testing"
 )
 
@@ -29,6 +31,9 @@ const (
 	_NMode
 )
 
+var float64s = [...]float64{74.3, 59.0, math.Inf(1), 238.2, -784.0, 2.3, math.NaN(), math.NaN(), math.Inf(-1), 9845.768, -959.7485, 905, 7.8, 7.8}
+var ints = [...]int{74, 59, 238, -784, 9845, 959, 905, 0, 0, 42, 7586, -5467984, 7586}
+
 // IsSorted reports whether data is sorted.
 func IsSorted(data Interface) bool {
 	n := data.Len()
@@ -38,6 +43,33 @@ func IsSorted(data Interface) bool {
 		}
 	}
 	return true
+}
+
+func TestReverseSortIntSlice(t *testing.T) {
+	data := ints
+	data1 := ints
+	a := IntSlice(data[0:])
+	Heap(a)
+	r := IntSlice(data1[0:])
+	Heap(sort.Reverse(r))
+	for i := 0; i < len(data); i++ {
+		if a[i] != r[len(data)-1-i] {
+			t.Errorf("reverse sort didn't sort")
+		}
+		if i > len(data)/2 {
+			break
+		}
+	}
+}
+
+func TestSortFloat64Slice(t *testing.T) {
+	data := float64s
+	a := Float64Slice(data[0:])
+	Heap(a)
+	if !IsSorted(a) {
+		t.Errorf("sorted %v", float64s)
+		t.Errorf("   got %v", data)
+	}
 }
 
 // IntsAreSorted reports whether the slice x is sorted in increasing order.
@@ -78,10 +110,20 @@ func (x IntSlice) Len() int           { return len(x) }
 func (x IntSlice) Less(i, j int) bool { return x[i] < x[j] }
 func (x IntSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 
-// Sort is a convenience method: x.Sort() calls Sort(x).
-func (x IntSlice) Sort() { Sort(x) }
+type Float64Slice []float64
 
-func Ints(x []int) { Sort(IntSlice(x)) }
+func (x Float64Slice) Len() int           { return len(x) }
+func (x Float64Slice) Less(i, j int) bool { return x[i] < x[j] || (isNaN(x[i]) && !isNaN(x[j])) }
+func (x Float64Slice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+
+func isNaN(f float64) bool {
+	return f != f
+}
+
+// Sort is a convenience method: x.Sort() calls Sort(x).
+func (x IntSlice) Sort() { Heap(x) }
+
+func Ints(x []int) { Heap(IntSlice(x)) }
 
 func min(a, b int) int {
 	if a < b {
